@@ -1,0 +1,98 @@
+% = Representing Syntax as Terms and Sorts as Types
+
+% The following LF signature represents natural numbers:
+
+nat : type.
+z : nat.
+s : nat -> nat.
+
+% The relationship between the informal notion and the LF representation
+% can be stated by giving the following encoding judgment:
+%
+% [
+%   -------
+%    0 @ z
+%
+%    n @ N
+%   -------------
+%    n + 1 @ s N
+% ]
+
+% An encoding is adequate iff it is an isomorphism between the informal
+% object-language entities and the LF terms of the appropriate type.
+
+% For {nat}, adequacy requires only a simple bijection, which can be
+% established as follows:
+%
+% + If [n @ N] then [n] is a well-formed natural number and [N] is an
+%   LF term of type nat.
+%
+% + For all [n], there exists a unique LF term [N] such that [n @ N].
+%
+% + For all LF terms [N] of type {nat}, there exists a unique [n] such
+%   that [n @ N].
+
+% = Simply-Typed LF
+
+% The syntax of LF forces terms to be beta-normal, and typing rules for
+% ensure that they are eta-long.  In logic, canonical forms correspond
+% to normal and neutral natural deduction proofs and cut-free sequent
+% calclulus proofs.
+
+% Substitution of one canonical form into another (of the form [x M])
+% may produce a redex.  We should use hereditary substitution which
+% directly computes the canonical result of an ordinary substitution.
+
+% = Representing Judgments as Types and Derivation as Terms
+
+even : nat -> type.
+even-z : even z.
+% even-s : {N : nat} even N -> even (s (s N)).
+even-s : even (s (s N)) <- even N.
+
+plus : nat -> nat -> nat -> type.
+% plus-z : {N2 : nat} plus z N2 N2.
+plus-z : plus z N2 N2.
+% plus-s : {N1 : nat} {N2 : nat} {N3 : nat} plus N1 N2 N3 -> plus (s N1) N2 (s N3).
+plus-s : plus (s N1) N2 (s N3) <- plus N1 N2 N3.
+
+% = Full LF
+
+2 : nat = s (s z).
+even-2 : even 2 = even-s even-z.
+
+ss : nat -> nat = [x : nat] s (s x).
+
+even-4 : even (ss 2) = even-s even-2.
+
+% = Proving Totality Assertions about the Natural Numbers
+
+%mode plus +N1 +N2 -N3.
+%worlds () (plus _ _ _).
+
+%total N1 (plus N1 _ _).
+
+%solve D : plus (s z) (s z) N.
+
+% = Proving Metatheorems about the Natural Numbers
+
+sum-evens : even N1 -> even N2 -> plus N1 N2 N3 -> even N3 -> type.
+
+sez : sum-evens (even-z : even z)
+                (DevenN2 : even N2)
+                (plus-z : plus z N2 N2)
+                (DevenN2 : even N2).
+
+ses : sum-evens (even-s DevenN1' : even (s (s N1')))
+                (DevenN2 : even N2)
+                (plus-s (plus-s Dplus) : plus (s (s N1')) N2 (s (s N3')))
+                (even-s DevenN3' : even (s (s N3')))
+   <- sum-evens (DevenN1' : even N1')
+                (DevenN2 : even N2)
+                (Dplus : plus N1' N2 N3')
+                (DevenN3' : even N3').
+
+%mode sum-evens +D1 +D2 +Dplus -D3.
+%worlds () (sum-evens _ _ _ _).
+
+%total D (sum-evens D _ _ _).
