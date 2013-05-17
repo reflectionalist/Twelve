@@ -1,0 +1,89 @@
+prop : type.
+
+top : prop.
+bot : prop.
+not : prop -> prop.
+and : prop -> prop -> prop.
+or  : prop -> prop -> prop.
+imp : prop -> prop -> prop.
+
+%abbrev
+equ : prop -> prop -> prop =
+  [A : prop]
+    [B : prop]
+      and (imp A B) (imp B A).
+
+true : prop -> type.
+
+top_i : true top.
+bot_e : true bot -> true A.
+
+not_i : (true A -> true bot) -> true (not A).
+not_e : true (not A) -> true A -> true bot.
+
+and_i  : true A -> true B -> true (and A B).
+and_e1 : true (and A B) -> true P.
+and_e2 : true (and A B) -> true B.
+
+or_i1 : true A -> true (or A B).
+or_i2 : true B -> true (or A B).
+or_e  : true (or A B) -> (true A -> true C) -> (true B -> true C) -> true C.
+
+imp_i : (true A -> true B) -> true (imp A B).
+imp_e : true (imp A B) -> true A -> true B.
+
+admit : {A : prop} true A.
+
+
+scomb : true (imp A B) -> true (imp A (imp B C)) -> true A -> true C =
+  [p : true (imp A B)]
+    [q : true (imp A (imp B C))]
+      [r : true A]
+        imp_e (imp_e q r) (imp_e p r).
+
+trans : true (imp A B) -> true (imp B C) -> true (imp A C) =
+  [p : true (imp A B)]
+    [q : true (imp B C)]
+      imp_i ([r : true A]
+              imp_e q (imp_e p r) ).
+
+weaken : true (imp A B) -> true (imp A (imp C B)) =
+  [p : true (imp A B)]
+    imp_i ([q : true A]
+            imp_i ([_ : true C]
+                    imp_e p q ) ).
+
+id : true (imp A A) =
+  imp_i ([p : true A] p).
+
+contr : true (imp A (imp A B)) -> true (imp A B) =
+  [p : true (imp A (imp A B))]
+    imp_i ([q : true A]
+            imp_e (imp_e p q) q ).
+
+exch : true (imp A (imp B C)) -> true (imp B (imp A C)) =
+  [p : true (imp A (imp B C))]
+    imp_i ([q : true B]
+            imp_i ([r : true A]
+                    imp_e (imp_e p r) q) ).
+
+and_sym : true (and A B) -> true (and B A) =
+  [p : true (and A B)]
+    and_i (and_e2 p) (and_e1 p).
+
+curry : true (imp (and A B) C) -> true (imp A (imp B C)) =
+  [p : true (imp (and A B) C)]
+    imp_i ([q : true A]
+            imp_i ([r : true B] imp_e p (and_i q r)) ).
+
+uncurry : true (imp A (imp B C)) -> true (imp (and A B) C) =
+  [p : true (imp A (imp B C))]
+    imp_i ([q : true (and A B)]
+            imp_e (imp_e p (and_e1 q)) (and_e2 q) ).
+
+or_not_imp : true (or (not A) B) -> true (imp A B) =
+  [p : true (or (not A) B)]
+    imp_i ([q : true A]
+            or_e p ([r : true (not A)]
+		     bot_e (not_e r q) )
+	           ([s : true B] s) ) .
