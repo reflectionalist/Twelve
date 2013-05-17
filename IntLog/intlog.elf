@@ -1,89 +1,90 @@
-prop : type.
+proposition : type.
 
-top : prop.
-bot : prop.
-not : prop -> prop.
-and : prop -> prop -> prop.
-or  : prop -> prop -> prop.
-imp : prop -> prop -> prop.
+true : proposition.
+false : proposition.
+not : proposition -> proposition.
+and : proposition -> proposition -> proposition.
+or  : proposition -> proposition -> proposition.
+imply : proposition -> proposition -> proposition.
 
 %abbrev
-equ : prop -> prop -> prop =
-  [A : prop]
-    [B : prop]
-      and (imp A B) (imp B A).
+equivalence : proposition -> proposition -> proposition =
+  [A : proposition]
+    [B : proposition]
+      and (imply A B) (imply B A).
 
-true : prop -> type.
+provable : proposition -> type.
 
-top_i : true top.
-bot_e : true bot -> true A.
+true_i : provable true.
+false_e : provable false -> provable A.
 
-not_i : (true A -> true bot) -> true (not A).
-not_e : true (not A) -> true A -> true bot.
+not_i : (provable A -> provable false) -> provable (not A).
+not_e : provable (not A) -> provable A -> provable false.
 
-and_i  : true A -> true B -> true (and A B).
-and_e1 : true (and A B) -> true P.
-and_e2 : true (and A B) -> true B.
+and_i  : provable A -> provable B -> provable (and A B).
+and_e1 : provable (and A B) -> provable P.
+and_e2 : provable (and A B) -> provable B.
 
-or_i1 : true A -> true (or A B).
-or_i2 : true B -> true (or A B).
-or_e  : true (or A B) -> (true A -> true C) -> (true B -> true C) -> true C.
+or_i1 : provable A -> provable (or A B).
+or_i2 : provable B -> provable (or A B).
+or_e  : provable (or A B) -> (provable A -> provable C) -> (provable B -> provable C) -> provable C.
 
-imp_i : (true A -> true B) -> true (imp A B).
-imp_e : true (imp A B) -> true A -> true B.
+imply_i : (provable A -> provable B) -> provable (imply A B).
+imply_e : provable (imply A B) -> provable A -> provable B.
 
-admit : {A : prop} true A.
+admit : {A : proposition} provable A.
 
 
-scomb : true (imp A B) -> true (imp A (imp B C)) -> true A -> true C =
-  [p : true (imp A B)]
-    [q : true (imp A (imp B C))]
-      [r : true A]
-        imp_e (imp_e q r) (imp_e p r).
+s_combinator : provable (imply A B) -> provable (imply A (imply B C)) -> provable A -> provable C =
+  [p : provable (imply A B)]
+    [q : provable (imply A (imply B C))]
+      [r : provable A]
+        imply_e (imply_e q r) (imply_e p r).
 
-trans : true (imp A B) -> true (imp B C) -> true (imp A C) =
-  [p : true (imp A B)]
-    [q : true (imp B C)]
-      imp_i ([r : true A]
-              imp_e q (imp_e p r) ).
+transitivity : provable (imply A B) -> provable (imply B C) -> provable (imply A C) =
+  [p : provable (imply A B)]
+    [q : provable (imply B C)]
+      imply_i ([r : provable A]
+              imply_e q (imply_e p r) ).
 
-weaken : true (imp A B) -> true (imp A (imp C B)) =
-  [p : true (imp A B)]
-    imp_i ([q : true A]
-            imp_i ([_ : true C]
-                    imp_e p q ) ).
+weakening : provable (imply A B) -> provable (imply A (imply C B)) =
+  [p : provable (imply A B)]
+    imply_i ([q : provable A]
+            imply_i ([_ : provable C]
+                    imply_e p q ) ).
 
-id : true (imp A A) =
-  imp_i ([p : true A] p).
+identity : provable (imply A A) =
+  imply_i ([p : provable A] p).
 
-contr : true (imp A (imp A B)) -> true (imp A B) =
-  [p : true (imp A (imp A B))]
-    imp_i ([q : true A]
-            imp_e (imp_e p q) q ).
+contraction : provable (imply A (imply A B)) -> provable (imply A B) =
+  [p : provable (imply A (imply A B))]
+    imply_i ([q : provable A]
+            imply_e (imply_e p q) q ).
 
-exch : true (imp A (imp B C)) -> true (imp B (imp A C)) =
-  [p : true (imp A (imp B C))]
-    imp_i ([q : true B]
-            imp_i ([r : true A]
-                    imp_e (imp_e p r) q) ).
+exchange : provable (imply A (imply B C)) -> provable (imply B (imply A C)) =
+  [p : provable (imply A (imply B C))]
+    imply_i ([q : provable B]
+            imply_i ([r : provable A]
+                    imply_e (imply_e p r) q) ).
 
-and_sym : true (and A B) -> true (and B A) =
-  [p : true (and A B)]
+and_symmetry : provable (and A B) -> provable (and B A) =
+  [p : provable (and A B)]
     and_i (and_e2 p) (and_e1 p).
 
-curry : true (imp (and A B) C) -> true (imp A (imp B C)) =
-  [p : true (imp (and A B) C)]
-    imp_i ([q : true A]
-            imp_i ([r : true B] imp_e p (and_i q r)) ).
+curry : provable (imply (and A B) C) -> provable (imply A (imply B C)) =
+  [p : provable (imply (and A B) C)]
+    imply_i ([q : provable A]
+            imply_i ([r : provable B] imply_e p (and_i q r)) ).
 
-uncurry : true (imp A (imp B C)) -> true (imp (and A B) C) =
-  [p : true (imp A (imp B C))]
-    imp_i ([q : true (and A B)]
-            imp_e (imp_e p (and_e1 q)) (and_e2 q) ).
+uncurry : provable (imply A (imply B C)) -> provable (imply (and A B) C) =
+  [p : provable (imply A (imply B C))]
+    imply_i ([q : provable (and A B)]
+            imply_e (imply_e p (and_e1 q)) (and_e2 q) ).
 
-or_not_imp : true (or (not A) B) -> true (imp A B) =
-  [p : true (or (not A) B)]
-    imp_i ([q : true A]
-            or_e p ([r : true (not A)]
-		     bot_e (not_e r q) )
-	           ([s : true B] s) ) .
+or_not_imply : provable (or (not A) B) -> provable (imply A B) =
+  [p : provable (or (not A) B)]
+    imply_i ([q : provable A]
+            or_e p ([r : provable (not A)]
+		     false_e (not_e r q) )
+	           ([s : provable B] s) ) .
+
