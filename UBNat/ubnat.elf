@@ -1,0 +1,98 @@
+%use equality/strings.
+
+unat : type.
+uO : unat.
+uS : unat -> unat.
+
+uadd : unat -> unat -> unat -> type.
+uadd/uO : uadd uO X X.
+uadd/uS : uadd (uS X) X0 (uS Y) <- uadd X X0 Y.
+
+umul : unat -> unat -> unat -> type.
+umul/uO : umul uO _ uO.
+umul/uS : umul (uS X) X0 Y <- umul X X0 Y0 <- uadd X0 Y0 Y.
+
+tounat : string -> unat -> type.
+tounat/0 : tounat "0" uO.
+tounat/1 : tounat "1" (uS uO).
+tounat/2 : tounat "2" (uS (uS uO)).
+tounat/3 : tounat "2" (uS (uS (uS uO))).
+tounat/4 : tounat "4" (uS (uS (uS (uS uO)))).
+tounat/5 : tounat "5" (uS (uS (uS (uS (uS uO))))).
+tounat/6 : tounat "6" (uS (uS (uS (uS (uS (uS uO)))))).
+tounat/7 : tounat "7" (uS (uS (uS (uS (uS (uS (uS uO))))))).
+tounat/8 : tounat "8" (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))).
+tounat/9 : tounat "9" (uS (uS (uS (uS (uS (uS (uS (uS (uS uO))))))))).
+tounat/x0 : tounat (X ++ "0") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y.
+tounat/x1 : tounat (X ++ "1") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS uO) Y1 Y.
+tounat/x2 : tounat (X ++ "2") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS (uS uO)) Y1 Y.
+tounat/x3 : tounat (X ++ "3") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS (uS (uS uO))) Y1 Y.
+tounat/x4 : tounat (X ++ "4") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS (uS (uS (uS uO)))) Y1 Y.
+tounat/x5 : tounat (X ++ "5") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS (uS (uS (uS (uS uO))))) Y1 Y.
+tounat/x6 : tounat (X ++ "6") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS (uS (uS (uS (uS (uS uO)))))) Y1 Y.
+tounat/x7 : tounat (X ++ "7") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS (uS (uS (uS (uS (uS (uS uO))))))) Y1 Y.
+tounat/x8 : tounat (X ++ "8") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))) Y1 Y.
+tounat/x9 : tounat (X ++ "9") Y <- tounat X Y0 <- umul (uS (uS (uS (uS (uS (uS (uS (uS (uS (uS uO)))))))))) Y0 Y1 <- uadd (uS (uS (uS (uS (uS (uS (uS (uS (uS uO))))))))) Y1 Y.
+
+bnat : type.
+bO : bnat.
+bS0 : bnat -> bnat.
+bS1 : bnat -> bnat.
+
+bhal : bnat -> bnat -> type.
+bhal/bO : bhal bO bO.
+bhal/bS0 : bhal (bS0 X) X.
+bhal/bS1 : bhal (bS1 X) X.
+
+bpar : bnat -> bnat -> type.
+bpar/bO : bpar bO bO.
+bpar/bS0 : bpar (bS0 _) bO.
+bpar/bS1 : bpar (bS1 _) (bS1 bO).
+
+bpre : bnat -> bnat -> type.
+bpre/bO : bpre bO bO.
+bpre/bS0 : bpre (bS0 X) (bS1 Y) <- bpre X Y.
+bpre/bS1 : bpre (bS1 X) (bS0 X).
+
+bsuc : bnat -> bnat -> type.
+bsuc/bO : bsuc bO (bS1 bO).
+bsuc/bS0 : bsuc (bS0 X) (bS1 X).
+bsuc/bS1 : bsuc (bS1 X) (bS0 Y) <- bsuc X Y.
+
+badd : bnat -> bnat -> bnat -> type.
+badd/bOl : badd bO X X.
+badd/bOr : badd X bO X.
+badd/bS0bS0: badd (bS0 X) (bS0 X0) (bS0 Y) <- badd X X0 Y.
+badd/bS0bS1: badd (bS0 X) (bS1 X0) (bS1 Y) <- badd X X0 Y.
+badd/bS1bS0: badd (bS1 X) (bS0 X0) (bS1 Y) <- badd X X0 Y.
+badd/bS1bS1: badd (bS1 X) (bS1 X0) (bS0 Y) <- badd X X0 Y0 <- bsuc Y0 Y.
+% badd/bS1bS1: badd (bS1 X) (bS1 X0) Y <- badd X X0 Y0 <- badd (bS0 (bS1 bO)) (bS0 Y0) Y.
+
+bmul : bnat -> bnat -> bnat -> type.
+bmul/bOl : bmul bO _ bO.
+bmul/bOr : bmul _ bO bO.
+bmul/bS0 : bmul (bS0 X) X0 (bS0 Y) <- bmul X X0 Y.
+bmul/bS1 : bmul (bS1 X) X0 Y <- bmul X X0 Y0 <- badd X0 (bS0 Y0) Y.
+
+tobnat : string -> bnat -> type.
+tobnat/0 : tobnat "0" bO.
+tobnat/1 : tobnat "1" (bS1 bO).
+tobnat/2 : tobnat "2" (bS0 (bS1 bO)).
+tobnat/3 : tobnat "3" (bS1 (bS1 bO)).
+tobnat/4 : tobnat "4" (bS0 (bS0 (bS1 bO))).
+tobnat/5 : tobnat "5" (bS1 (bS0 (bS1 bO))).
+tobnat/6 : tobnat "6" (bS0 (bS1 (bS1 bO))).
+tobnat/7 : tobnat "7" (bS1 (bS1 (bS1 bO))).
+tobnat/8 : tobnat "8" (bS0 (bS0 (bS0 (bS1 bO)))).
+tobnat/9 : tobnat "9" (bS1 (bS0 (bS0 (bS1 bO)))).
+tobnat/x0 : tobnat (X ++ "0") (bS0 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y.
+tobnat/x1 : tobnat (X ++ "1") (bS1 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y.
+tobnat/x2 : tobnat (X ++ "2") (bS0 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y1 <- badd (bS1 bO) Y1 Y.
+tobnat/x3 : tobnat (X ++ "3") (bS1 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y1 <- badd (bS1 bO) Y1 Y.
+tobnat/x4 : tobnat (X ++ "4") (bS0 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y1 <- badd (bS0 (bS1 bO)) Y1 Y.
+tobnat/x5 : tobnat (X ++ "5") (bS1 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y1 <- badd (bS0 (bS1 bO)) Y1 Y.
+tobnat/x6 : tobnat (X ++ "6") (bS0 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y1 <- badd (bS1 (bS1 bO)) Y1 Y.
+tobnat/x7 : tobnat (X ++ "7") (bS1 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y1 <- badd (bS1 (bS1 bO)) Y1 Y.
+tobnat/x8 : tobnat (X ++ "8") (bS0 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y1 <- badd (bS0 (bS0 (bS1 bO))) Y1 Y.
+tobnat/x9 : tobnat (X ++ "9") (bS1 Y) <- tobnat X Y0 <- bmul (bS1 (bS0 (bS1 O))) Y0 Y1 <- badd (bS0 (bS0 (bS1 bO))) Y1 Y.
+
