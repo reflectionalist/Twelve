@@ -46,53 +46,169 @@ s : nat -> nat.
 % = Representing Judgments as Types and Derivation as Terms
 
 even : nat -> type.
-even-z : even z.
-% even-s : {N : nat} even N -> even (s (s N)).
-even-s : even (s (s N)) <- even N.
+even/z : even z.
+% even/s : {N : nat} even N -> even (s (s N)).
+even/ss : even (s (s N)) <- even N.
 
 plus : nat -> nat -> nat -> type.
-% plus-z : {N2 : nat} plus z N2 N2.
-plus-z : plus z N2 N2.
-% plus-s : {N1 : nat} {N2 : nat} {N3 : nat} plus N1 N2 N3 -> plus (s N1) N2 (s N3).
-plus-s : plus (s N1) N2 (s N3) <- plus N1 N2 N3.
+% plus/z : {N2 : nat} plus z N2 N2.
+plus/z : plus z N2 N2.
+% plus/s : {N1 : nat} {N2 : nat} {N3 : nat} plus N1 N2 N3 -> plus (s N1) N2 (s N3).
+plus/s : plus (s N1) N2 (s N3) <- plus N1 N2 N3.
 
 % = Full LF
 
 2 : nat = s (s z).
-even-2 : even 2 = even-s even-z.
+even-2 : even 2 = even/ss even/z.
 
 ss : nat -> nat = [x : nat] s (s x).
 
-even-4 : even (ss 2) = even-s even-2.
+even-4 : even (ss 2) = even/ss even-2.
 
 % = Proving Totality Assertions about the Natural Numbers
 
 %mode plus +N1 +N2 -N3.
 %worlds () (plus _ _ _).
-
 %total N1 (plus N1 _ _).
 
-%solve D : plus (s z) (s z) N.
+% DON'T use %solve in source file!  It will introduce macro identifiers!
+% solve D : plus (s z) (s z) N.
 
 % = Proving Metatheorems about the Natural Numbers
 
 sum-evens : even N1 -> even N2 -> plus N1 N2 N3 -> even N3 -> type.
-
-sez : sum-evens (even-z : even z)
-                (DevenN2 : even N2)
-                (plus-z : plus z N2 N2)
-                (DevenN2 : even N2).
-
-ses : sum-evens (even-s DevenN1' : even (s (s N1')))
-                (DevenN2 : even N2)
-                (plus-s (plus-s Dplus) : plus (s (s N1')) N2 (s (s N3')))
-                (even-s DevenN3' : even (s (s N3')))
-   <- sum-evens (DevenN1' : even N1')
-                (DevenN2 : even N2)
-                (Dplus : plus N1' N2 N3')
-                (DevenN3' : even N3').
-
 %mode sum-evens +D1 +D2 +Dplus -D3.
+sum-evens/z : sum-evens (even/z : even z)
+                        (DevenN2 : even N2)
+                        (plus/z : plus z N2 N2)
+                        (DevenN2 : even N2).
+sum-evens/ss : sum-evens (even/ss DevenN1 : even (s (s N1)))
+                         (DevenN2 : even N2)
+                         (plus/s (plus/s Dplus) : plus (s (s N1)) N2 (s (s N3)))
+                         (even/ss DevenN3 : even (s (s N3)))
+           <- sum-evens (DevenN1 : even N1)
+                        (DevenN2 : even N2)
+                        (Dplus : plus N1 N2 N3)
+                        (DevenN3 : even N3).
 %worlds () (sum-evens _ _ _ _).
+%total D1 (sum-evens D1 _ _ _).
 
-%total D (sum-evens D _ _ _).
+% = Exercises
+
+% Exercise 1
+
+plus-right-identity : {N1 : nat} plus N1 z N1 -> type.
+%mode plus-right-identity +N1 -Dplus.
+plus-right-identity/z : plus-right-identity z (plus/z : plus z z z).
+plus-right-identity/s : plus-right-identity (s N1) (plus/s DIH : plus (s N1) z (s N1))
+                     <- plus-right-identity N1 (DIH : plus N1 z N1).
+%worlds () (plus-right-identity _ _).
+%total N1 (plus-right-identity N1 _).
+
+plus-right-incrment : plus N1 N2 N3 -> plus N1 (s N2) (s N3) -> type.
+%mode plus-right-incrment +D1 -D2.
+plus-right-increment/z : plus-right-incrment (plus/z : plus z N2 N2)
+                                             (plus/z : plus z (s N2) (s N2)).
+plus-right-increment/s : plus-right-incrment (plus/s Dplus : plus (s N1) N2 (s N3))
+                                             (plus/s DIH : plus (s N1) (s N2) (s (s N3)))
+                      <- plus-right-incrment (Dplus : plus N1 N2 N3)
+                                             (DIH : plus N1 (s N2) (s N3)).
+%worlds () (plus-right-incrment _ _).
+%total D1 (plus-right-incrment D1 _).
+
+plus-commutative : plus N1 N2 N3 -> plus N2 N1 N3 -> type.
+%mode plus-commutative +D1 -D2.
+plus-commutative/z : plus-commutative (plus/z : plus z N2 N2)
+                                      (D : plus N2 z N2)
+                  <- plus-right-identity N2 (D : plus N2 z N2).
+plus-commutative/s : plus-commutative (plus/s D1 : plus (s N1) N2 (s N3))
+                                      (D : plus N2 (s N1) (s N3))
+                  <- plus-commutative (D1 : plus N1 N2 N3)
+                                      (DIH : plus N2 N1 N3)
+                  <- plus-right-incrment (DIH : plus N2 N1 N3)
+                                         (D : plus N2 (s N1) (s N3)).
+%worlds () (plus-commutative _ _).
+%total D1 (plus-commutative D1 _).
+
+% Exercise 2
+
+odd : nat -> type.
+odd/sz : odd (s z).
+odd/ss : odd (s (s N)) <- odd N.
+
+% Exercise 3
+
+succ-even : even N -> odd (s N) -> type.
+%mode succ-even +D1 -D2.
+succ-even/z : succ-even (even/z : even z)
+                        (odd/sz : odd (s z)).
+succ-even/ss : succ-even (even/ss DevenN : even (s (s N)))
+                         (odd/ss DIH : odd (s (s (s N))))
+            <- succ-even (DevenN : even N)
+                         (DIH : odd (s N)).
+%worlds () (succ-even _ _).
+%total D1 (succ-even D1 _).
+
+succ-odd : odd N -> even (s N) -> type.
+%mode succ-odd +D1 -D2.
+succ-odd/sz : succ-odd (odd/sz : odd (s z))
+                       (even/ss even/z : even (s (s z))).
+succ-odd/ss : succ-odd (odd/ss DoddN : odd (s (s N)))
+                       (even/ss DIH : even (s (s (s N))))
+           <- succ-odd (DoddN : odd N)
+                       (DIH : even (s N)).
+%worlds () (succ-odd _ _).
+%total D1 (succ-odd D1 _).
+
+% Exercise 4
+
+sum-even-odd : even N1 -> odd N2 -> plus N1 N2 N3 -> odd N3 -> type.
+%mode sum-even-odd +D1 +D2 +D3 -D4.
+sum-even-odd/z : sum-even-odd (even/z : even z)
+                              (DoddN2 : odd N2)
+                              (plus/z : plus z N2 N2)
+                              (DoddN2 : odd N2).
+sum-even-odd/ss : sum-even-odd (even/ss DevenN1 : even (s (s N1)))
+                               (DoddN2 : odd N2)
+                               (plus/s (plus/s DplusN1) : plus (s (s N1)) N2 (s (s N3)))
+                               (odd/ss DIH : odd (s (s N3)))
+               <- sum-even-odd (DevenN1 : even N1)
+                               (DoddN2 : odd N2)
+                               (DplusN1 : plus N1 N2 N3)
+                               (DIH : odd N3).
+%worlds () (sum-even-odd _ _ _ _).
+%total D1 (sum-even-odd D1 _ _ _).
+
+sum-odd-even : odd N1 -> even N2 -> plus N1 N2 N3 -> odd N3 -> type.
+%mode sum-odd-even +D1 +D2 +D3 -D4.
+sum-odd-even/sz : sum-odd-even (odd/sz : odd (s z))
+                               (DevenN2 : even N2)
+                               (plus/s plus/z : plus (s z) N2 (s N2))
+                               (DoddsN2 : odd (s N2))
+	       <- succ-even (DevenN2 : even N2) (DoddsN2 : odd (s N2)).
+sum-odd-even/ss : sum-odd-even (odd/ss DoddN1 : odd (s (s N1)))
+                               (DevenN2 : even N2)
+                               (plus/s (plus/s Dplus) : plus (s (s N1)) N2 (s (s N3)))
+			       (odd/ss DIH : odd (s (s N3)))
+               <- sum-odd-even (DoddN1 : odd N1)
+                               (DevenN2 : even N2)
+                               (Dplus : plus N1 N2 N3)
+                               (DIH : odd N3).
+%worlds () (sum-odd-even _ _ _ _).
+%total D1 (sum-odd-even D1 _ _ _).
+
+sum-odds : odd N1 -> odd N2 -> plus N1 N2 N3 -> even N3 -> type.
+%mode sum-odds +D1 +D2 +D3 -D4.
+sum-odds/sz : sum-odds (odd/sz : odd (s z))
+                       (DoddN2 : odd N2)
+                       (plus/s plus/z : plus (s z) N2 (s N2))
+                       (DevensN2 : even (s N2))
+           <- succ-odd (DoddN2 : odd N2) (DevensN2 : even (s N2)).
+sum-odds/ss : sum-odds (odd/ss DoddN1 : odd (s (s N1)))
+                       (DoddN2 : odd N2)
+	               (plus/s (plus/s Dplus) : plus (s (s N1)) N2 (s (s N3)))
+                       (even/ss DIH : even (s (s N3)))
+           <- sum-odds (DoddN1 : odd N1)
+                       (DoddN2 : odd N2)
+                       (Dplus : plus N1 N2 N3)
+                       (DIH : even N3).
