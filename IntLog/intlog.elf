@@ -18,8 +18,12 @@ provable : proposition -> type.
 true_i : provable true.
 false_e : provable false -> provable A.
 
+%{ encoding negation as implying false
 not_i : (provable A -> provable false) -> provable (not A).
 not_e : provable (not A) -> provable A -> provable false.
+}%
+not_i : (provable A -> {p : proposition} provable p) -> provable (not A).
+not_e : provable (not A) -> provable A -> {C : proposition} provable C.
 
 and_i  : provable A -> provable B -> provable (and A B).
 and_e1 : provable (and A B) -> provable P.
