@@ -6,8 +6,8 @@ nat : type.
 z : nat.
 s : nat -> nat.
 
-% The relationship between the informal notion and the LF representation
-% can be stated by giving the following encoding judgment:
+% The relationship between the informal notion and the LF representation can be
+% stated by giving the following encoding judgment:
 %
 % [
 %   -------
@@ -24,24 +24,23 @@ s : nat -> nat.
 % For {nat}, adequacy requires only a simple bijection, which can be
 % established as follows:
 %
-% + If [n @ N] then [n] is a well-formed natural number and [N] is an
-%   LF term of type nat.
+% + If [n @ N] then [n] is a well-formed natural number and [N] is an LF term
+%   of type nat.
 %
 % + For all [n], there exists a unique LF term [N] such that [n @ N].
 %
-% + For all LF terms [N] of type {nat}, there exists a unique [n] such
-%   that [n @ N].
+% + For all LF terms [N] of type {nat}, there exists a unique [n] such that [n
+%   @ N].
 
 % = Simply-Typed LF
 
-% The syntax of LF forces terms to be beta-normal, and typing rules for
-% ensure that they are eta-long.  In logic, canonical forms correspond
-% to normal and neutral natural deduction proofs and cut-free sequent
-% calclulus proofs.
+% The syntax of LF forces terms to be beta-normal, and typing rules for ensure
+% that they are eta-long.  In logic, canonical forms correspond to normal and
+% neutral natural deduction proofs and cut-free sequent calclulus proofs.
 
-% Substitution of one canonical form into another (of the form [x M])
-% may produce a redex.  We should use hereditary substitution which
-% directly computes the canonical result of an ordinary substitution.
+% Substitution of one canonical form into another (of the form [x M]) may
+% produce a redex.  We should use hereditary substitution which directly
+% computes the canonical result of an ordinary substitution.
 
 % = Representing Judgments as Types and Derivation as Terms
 
@@ -53,7 +52,8 @@ even/ss : even (s (s N)) <- even N.
 plus : nat -> nat -> nat -> type.
 % plus/z : {N2 : nat} plus z N2 N2.
 plus/z : plus z N2 N2.
-% plus/s : {N1 : nat} {N2 : nat} {N3 : nat} plus N1 N2 N3 -> plus (s N1) N2 (s N3).
+% plus/s : {N1 : nat} {N2 : nat} {N3 : nat} plus N1 N2 N3
+        -> plus (s N1) N2 (s N3).
 plus/s : plus (s N1) N2 (s N3) <- plus N1 N2 N3.
 
 % = Full LF
@@ -84,7 +84,8 @@ sum-evens/z : sum-evens (even/z : even z)
                         (DevenN2 : even N2).
 sum-evens/ss : sum-evens (even/ss DevenN1 : even (s (s N1)))
                          (DevenN2 : even N2)
-                         (plus/s (plus/s Dplus) : plus (s (s N1)) N2 (s (s N3)))
+                         (plus/s (plus/s Dplus)
+                          : plus (s (s N1)) N2 (s (s N3)) )
                          (even/ss DevenN3 : even (s (s N3)))
            <- sum-evens (DevenN1 : even N1)
                         (DevenN2 : even N2)
@@ -100,7 +101,8 @@ sum-evens/ss : sum-evens (even/ss DevenN1 : even (s (s N1)))
 plus-right-identity : {N1 : nat} plus N1 z N1 -> type.
 %mode plus-right-identity +N1 -Dplus.
 plus-right-identity/z : plus-right-identity z (plus/z : plus z z z).
-plus-right-identity/s : plus-right-identity (s N1) (plus/s DIH : plus (s N1) z (s N1))
+plus-right-identity/s : plus-right-identity (s N1)
+                                            (plus/s DIH : plus (s N1) z (s N1))
                      <- plus-right-identity N1 (DIH : plus N1 z N1).
 %worlds () (plus-right-identity _ _).
 %total N1 (plus-right-identity N1 _).
@@ -109,8 +111,10 @@ plus-right-incrment : plus N1 N2 N3 -> plus N1 (s N2) (s N3) -> type.
 %mode plus-right-incrment +D1 -D2.
 plus-right-increment/z : plus-right-incrment (plus/z : plus z N2 N2)
                                              (plus/z : plus z (s N2) (s N2)).
-plus-right-increment/s : plus-right-incrment (plus/s Dplus : plus (s N1) N2 (s N3))
-                                             (plus/s DIH : plus (s N1) (s N2) (s (s N3)))
+plus-right-increment/s : plus-right-incrment (plus/s Dplus
+                                              : plus (s N1) N2 (s N3) )
+                                             (plus/s DIH
+                                              : plus (s N1) (s N2) (s (s N3)) )
                       <- plus-right-incrment (Dplus : plus N1 N2 N3)
                                              (DIH : plus N1 (s N2) (s N3)).
 %worlds () (plus-right-incrment _ _).
@@ -170,7 +174,8 @@ sum-even-odd/z : sum-even-odd (even/z : even z)
                               (DoddN2 : odd N2).
 sum-even-odd/ss : sum-even-odd (even/ss DevenN1 : even (s (s N1)))
                                (DoddN2 : odd N2)
-                               (plus/s (plus/s DplusN1) : plus (s (s N1)) N2 (s (s N3)))
+                               (plus/s (plus/s DplusN1)
+                                : plus (s (s N1)) N2 (s (s N3)) )
                                (odd/ss DIH : odd (s (s N3)))
                <- sum-even-odd (DevenN1 : even N1)
                                (DoddN2 : odd N2)
@@ -188,7 +193,8 @@ sum-odd-even/sz : sum-odd-even (odd/sz : odd (s z))
 	       <- succ-even (DevenN2 : even N2) (DoddsN2 : odd (s N2)).
 sum-odd-even/ss : sum-odd-even (odd/ss DoddN1 : odd (s (s N1)))
                                (DevenN2 : even N2)
-                               (plus/s (plus/s Dplus) : plus (s (s N1)) N2 (s (s N3)))
+                               (plus/s (plus/s Dplus)
+                                : plus (s (s N1)) N2 (s (s N3)) )
 			       (odd/ss DIH : odd (s (s N3)))
                <- sum-odd-even (DoddN1 : odd N1)
                                (DevenN2 : even N2)
@@ -212,3 +218,4 @@ sum-odds/ss : sum-odds (odd/ss DoddN1 : odd (s (s N1)))
                        (DoddN2 : odd N2)
                        (Dplus : plus N1 N2 N3)
                        (DIH : even N3).
+
