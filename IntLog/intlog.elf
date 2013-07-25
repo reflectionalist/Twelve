@@ -1,94 +1,114 @@
-proposition : type.
+term : type.
+form : type.
 
-true : proposition.
-false : proposition.
-not : proposition -> proposition.
-and : proposition -> proposition -> proposition.
-or  : proposition -> proposition -> proposition.
-imply : proposition -> proposition -> proposition.
+tru : form.
+fal : form.
+not : form -> form.
+and : form -> form -> form.
+ior : form -> form -> form.
+imp : form -> form -> form.
+all : (term -> form) -> form.
+one : (term -> form) -> form.
+
+%{ negation ecoded as implying false
+%abbrev
+not : form -> form = [A : form] imp A fal.
+}%
 
 %abbrev
-equivalence : proposition -> proposition -> proposition =
-  [A : proposition]
-    [B : proposition]
-      and (imply A B) (imply B A).
-
-provable : proposition -> type.
-
-true_i : provable true.
-false_e : provable false -> provable A.
-
-%{ encoding negation as implying false
-not_i : (provable A -> provable false) -> provable (not A).
-not_e : provable (not A) -> provable A -> provable false.
-}%
-not_i : (provable A -> {p : proposition} provable p) -> provable (not A).
-not_e : provable (not A) -> provable A -> {C : proposition} provable C.
-
-and_i  : provable A -> provable B -> provable (and A B).
-and_e1 : provable (and A B) -> provable P.
-and_e2 : provable (and A B) -> provable B.
-
-or_i1 : provable A -> provable (or A B).
-or_i2 : provable B -> provable (or A B).
-or_e  : provable (or A B) -> (provable A -> provable C) -> (provable B -> provable C) -> provable C.
-
-imply_i : (provable A -> provable B) -> provable (imply A B).
-imply_e : provable (imply A B) -> provable A -> provable B.
-
-admit : {A : proposition} provable A.
+equ : form -> form -> form =
+  [A : form]
+    [B : form]
+      and (imp A B) (imp B A).
 
 
-s_combinator : provable (imply A B) -> provable (imply A (imply B C)) -> provable A -> provable C =
-  [p : provable (imply A B)]
-    [q : provable (imply A (imply B C))]
-      [r : provable A]
-        imply_e (imply_e q r) (imply_e p r).
+valid : form -> type.
 
-transitivity : provable (imply A B) -> provable (imply B C) -> provable (imply A C) =
-  [p : provable (imply A B)]
-    [q : provable (imply B C)]
-      imply_i ([r : provable A]
-              imply_e q (imply_e p r) ).
+tru_i : valid tru.
 
-weakening : provable (imply A B) -> provable (imply A (imply C B)) =
-  [p : provable (imply A B)]
-    imply_i ([q : provable A]
-            imply_i ([_ : provable C]
-                    imply_e p q ) ).
+fal_e : valid fal -> valid A.
 
-identity : provable (imply A A) =
-  imply_i ([p : provable A] p).
+not_i : (valid A -> {p : form} valid p) -> valid (not A).
+not_e : valid (not A) -> valid A -> {C : form} valid C.
 
-contraction : provable (imply A (imply A B)) -> provable (imply A B) =
-  [p : provable (imply A (imply A B))]
-    imply_i ([q : provable A]
-            imply_e (imply_e p q) q ).
+and_i  : valid A -> valid B -> valid (and A B).
+and_e1 : valid (and A B) -> valid P.
+and_e2 : valid (and A B) -> valid B.
 
-exchange : provable (imply A (imply B C)) -> provable (imply B (imply A C)) =
-  [p : provable (imply A (imply B C))]
-    imply_i ([q : provable B]
-            imply_i ([r : provable A]
-                    imply_e (imply_e p r) q) ).
+ior_i1 : valid A -> valid (ior A B).
+ior_i2 : valid B -> valid (ior A B).
+ior_e  : valid (ior A B)
+      -> (valid A -> valid C)
+      -> (valid B -> valid C)
+      -> valid C.
 
-and_symmetry : provable (and A B) -> provable (and B A) =
-  [p : provable (and A B)]
+imp_i : (valid A -> valid B) -> valid (imp A B).
+imp_e : valid (imp A B) -> valid A -> valid B.
+
+all_i : ({t : term} valid (A t)) -> valid (all ([x : term] A x)).
+all_e : valid (all ([x : term] A x)) -> ({t : term} valid (A t)).
+
+% Note the scoping difference of {\{t : term\}} in {all_i} and {one_i}.  For
+% {all_i}, the first argument must be a function from any term {t} to a proof
+% of the validity of {(A t)}.  For {one_i}, the first two arguments should be
+% the witness term {t} and a proof of the validity of {(A t)}.
+
+one_i : {t : term} valid (A t) -> valid (one ([x : term] A x)).
+one_e : valid (one ([x : term] A x))
+     -> ({t : term} valid (A t) -> valid C)
+     -> valid C.
+
+
+s_combinator : valid (imp A B) -> valid (imp A (imp B C)) -> valid A -> valid C
+  = [p : valid (imp A B)]
+      [q : valid (imp A (imp B C))]
+        [r : valid A]
+          imp_e (imp_e q r) (imp_e p r).
+
+transitivity : valid (imp A B) -> valid (imp B C) -> valid (imp A C) =
+  [p : valid (imp A B)]
+    [q : valid (imp B C)]
+      imp_i ([r : valid A]
+              imp_e q (imp_e p r) ).
+
+weakening : valid (imp A B) -> valid (imp A (imp C B)) =
+  [p : valid (imp A B)]
+    imp_i ([q : valid A]
+            imp_i ([_ : valid C]
+                    imp_e p q ) ).
+
+identity : valid (imp A A) =
+  imp_i ([p : valid A] p).
+
+contraction : valid (imp A (imp A B)) -> valid (imp A B) =
+  [p : valid (imp A (imp A B))]
+    imp_i ([q : valid A]
+            imp_e (imp_e p q) q ).
+
+exchange : valid (imp A (imp B C)) -> valid (imp B (imp A C)) =
+  [p : valid (imp A (imp B C))]
+    imp_i ([q : valid B]
+            imp_i ([r : valid A]
+                    imp_e (imp_e p r) q) ).
+
+and_symmetry : valid (and A B) -> valid (and B A) =
+  [p : valid (and A B)]
     and_i (and_e2 p) (and_e1 p).
 
-curry : provable (imply (and A B) C) -> provable (imply A (imply B C)) =
-  [p : provable (imply (and A B) C)]
-    imply_i ([q : provable A]
-            imply_i ([r : provable B] imply_e p (and_i q r)) ).
+curry : valid (imp (and A B) C) -> valid (imp A (imp B C)) =
+  [p : valid (imp (and A B) C)]
+    imp_i ([q : valid A]
+            imp_i ([r : valid B] imp_e p (and_i q r)) ).
 
-uncurry : provable (imply A (imply B C)) -> provable (imply (and A B) C) =
-  [p : provable (imply A (imply B C))]
-    imply_i ([q : provable (and A B)]
-            imply_e (imply_e p (and_e1 q)) (and_e2 q) ).
+uncurry : valid (imp A (imp B C)) -> valid (imp (and A B) C)
+  = [p : valid (imp A (imp B C))]
+      imp_i ([q : valid (and A B)]
+              imp_e (imp_e p (and_e1 q)) (and_e2 q) ).
 
-or_not_imply : provable (or (not A) B) -> provable (imply A B) =
-  [p : provable (or (not A) B)]
-    imply_i ([q : provable A]
-            or_e p ([r : provable (not A)]
-		     false_e (not_e r q) )
-	           ([s : provable B] s) ) .
+ior_not_imp : valid (ior (not A) B) -> valid (imp A B) =
+  [p : valid (ior (not A) B)]
+    imp_i ([q : valid A]
+            ior_e p ([r : valid (not A)]
+                      fal_e (not_e r q) )
+                    ([s : valid B] s) ).
 
